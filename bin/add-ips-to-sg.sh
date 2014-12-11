@@ -1,4 +1,4 @@
-#bin/sh
+#!/bin/sh
 
 aws --region us-west-2 ec2 describe-security-groups --group-ids $2  >  ~/before.txt
 
