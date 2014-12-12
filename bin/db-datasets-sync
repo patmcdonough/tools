@@ -1,0 +1,34 @@
+#!/bin/bash
+
+# By default, run this in dryrun mode, unless the arguments contain "--no-dry-run"
+
+if [[ $@ == *"--no-dry-run"* ]]
+then
+  dry_run_flag=""
+else
+  dry_run_flag="--dryrun"
+fi
+
+slave_buckets=( \
+ 's3://databricks-datasets-california' \
+ 's3://databricks-datasets-ireland' \
+ 's3://databricks-datasets-saopaulo' \
+ 's3://databricks-datasets-singapore' \
+ 's3://databricks-datasets-sydney' \
+ 's3://databricks-datasets-tokyo' \
+ 's3://databricks-datasets-virginia' )
+
+# master_bucket='s3://databricks-datasets'
+master_bucket='s3://databricks-datasets-oregon'
+
+echo "syncing to $master_bucket"
+aws --profile databricks-datasets-rw s3 sync --include README.md $dry_run_flag . $master_bucket
+
+echo "copying from $master_bucket to the following locations:"
+
+for (( i=0; i<${#slave_buckets[@]}; i++ ));
+do
+ aws --profile databricks-datasets-rw s3 sync  --include README.md $dry_run_flag $master_bucket ${slave_buckets[$i]}
+done
+
+
